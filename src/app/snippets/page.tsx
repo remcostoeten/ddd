@@ -1,11 +1,27 @@
-import { cn } from '@/lib/utils'
-import { Layout } from '@/shared/shared/components/layout'
+'use client';
+
+import { Code } from 'lucide-react';
+import { Page } from '@/shared/components/page/page';
+import { EmptyState } from '@/shared/components/empty-state';
+
 export default function SnippetsPage() {
   return (
-    <Layout>
-      <h1 className={cn("text-2xl font-bold mb-4")}>Snippets</h1>
-      <p className={cn("text-muted-foreground")}>Your code snippets and reusable components will be displayed here.</p>
-    </Layout>
-  )
+    <Page>
+      <Page.Header
+        title="Snippets"
+        description="Store and organize your code snippets"
+      />
+      <Page.Content>
+        <EmptyState
+          icon={Code}
+          title="No code snippets"
+          description="Create your first code snippet to start building your library."
+          action={{
+            label: "Create Snippet",
+            onClick: () => console.log("Create snippet")
+          }}
+        />
+      </Page.Content>
+    </Page>
+  );
 }
-

@@ -1,6 +1,6 @@
 import { MousePointer } from 'lucide-react';
 import { useSettingsStore } from '../settings-store';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 type CursorSize = 'small' | 'medium' | 'large';
 

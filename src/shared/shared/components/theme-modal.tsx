@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
+import { Label } from "@/shared/components/ui/label"
+import { Skeleton } from "@/shared/components/ui/skeleton"
 
 const themes = ['light', 'dark', 'system']
 

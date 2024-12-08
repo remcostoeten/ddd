@@ -1,11 +1,27 @@
-import { Layout } from '@/shared/shared/components/layout'
+'use client';
+
+import { StickyNote } from 'lucide-react';
+import { Page } from '@/shared/components/page/page';
+import { EmptyState } from '@/shared/components/empty-state';
 
 export default function NotesPage() {
   return (
-    <Layout>
-      <h1 className="text-2xl font-bold mb-4">Notes</h1>
-      <p className="text-muted-foreground">Your notes and memos will be listed here.</p>
-    </Layout>
-  )
+    <Page>
+      <Page.Header
+        title="Notes"
+        description="Capture and organize your thoughts"
+      />
+      <Page.Content>
+        <EmptyState
+          icon={StickyNote}
+          title="No notes yet"
+          description="Start writing your first note to capture your ideas."
+          action={{
+            label: "Create Note",
+            onClick: () => console.log("Create note")
+          }}
+        />
+      </Page.Content>
+    </Page>
+  );
 }
-

@@ -5,18 +5,16 @@ import { Settings, User, GripVertical, LogOut, Keyboard } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSidebarStore } from '@/app/store/sidebar-store'
-import { User as UserType, getUser } from '@/app/types/user'
 import { sidebarMenu } from '@/app/core/config/sidebar-menu'
 import { toast } from 'sonner'
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/shared/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/shared/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip'
 import { useSettingsStore } from '@/features/settings/settings-store'
 import { useKeyboardShortcut } from '../hooks/use-keyboard-shortcut'
 import { SettingsModal } from '@/features/settings/components/settings-modal'
-import { useReducedMotion } from '../../../hooks/use-reduced-motion'
-import { useSettings } from '../../../hooks/use-settings'
-import { cn } from '../../../lib/utils'
-import AnimatedShieldLogo from '../../../components/ui/animated-shield-logo'
+import { useSession } from '@/lib/auth/session-provider'
+import { oauthLogin } from '@/lib/auth/client'
+import AnimatedShieldLogo from '@/components/ui/animated-shield-logo'
 
 type SidebarProps = {
   isCollapsed: boolean
@@ -27,9 +25,9 @@ type SidebarProps = {
 
 export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }: SidebarProps) {
   const [isResizing, setIsResizing] = useState<boolean>(false)
-  const [user, setUser] = useState<UserType | null>(null)
   const pathname = usePathname()
   const { compactMode, reducedMotion, isSettingsOpen, toggleSettingsModal } = useSettingsStore()
+  const { user, loading, signOut } = useSession()
 
   const handleResizeStart = () => {
     setIsResizing(true)
@@ -51,18 +49,6 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
   }
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUser(1)
-        setUser(userData)
-      } catch (error) {
-        console.error('Failed to fetch user:', error)
-      }
-    }
-    fetchUser()
-  }, [])
-
-  useEffect(() => {
     if (isResizing) {
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleResizeEnd)
@@ -78,12 +64,20 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
     toggleSettingsModal()
   }
 
+  const handleLogin = async (provider: 'google' | 'github') => {
+    try {
+      await oauthLogin(provider)
+    } catch (error) {
+      toast.error('Failed to start login')
+    }
+  }
+
   useKeyboardShortcut(
     [
       { key: 's', ctrl: true },
       { key: 's', meta: true }
     ],
-    toggleSettingsModal,
+    openSettings,
     { preventDefault: true }
   )
 
@@ -99,7 +93,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
       >
         <div className="flex flex-col w-full">
           {/* Logo */}
-          <div className={`p-4 ${width <= 120 ? 'items-center' : 'items-start'}`}>
+          <div className={`p-3 ${width <= 120 ? 'items-center' : 'items-start'}`}>
             <AnimatedShieldLogo size="xs" />
           </div>
 
@@ -113,7 +107,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                 <TooltipTrigger asChild>
                   <Link
                     href={item.href}
-                    className={`p-2 ${compactMode ? 'mb-1' : 'mb-2'} flex items-center rounded-md transition-colors ${
+                    className={`p-2 ${compactMode ? 'mb-1' : 'mb-2'} flex items-center justify-center rounded-md transition-colors ${
                       reducedMotion ? '' : 'duration-200'
                     } ${
                       pathname.startsWith(item.href)
@@ -121,25 +115,14 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                         : 'text-[#4E4E4E] hover:text-white hover:bg-white/10'
                     } ${width <= 120 ? 'mx-2' : 'mx-3'} relative`}
                   >
-                    <item.icon className="w-6 h-6" strokeWidth={1.5} />
+                    <item.icon className="w-9 h-9" />
                     {width > 120 && (
                       <>
-                        <span className="ml-3 whitespace-nowrap">
+                        <span className="ml-4 whitespace-nowrap">
                           {item.tooltip}
                         </span>
-                        {item.kbd && (
-                          <span className="ml-auto pl-4 text-xs text-[#888888]">⌘{item.kbd}</span>
-                        )}
-                      </>
-                    )}
-                    {item.notifications && (
-                      <>
-                        {width <= 120 ? (
-                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#3ECF8E]/50 rounded-full notification-pulse" />
-                        ) : (
-                          <span className="ml-auto flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[#3ECF8E] text-[10px] font-medium text-black notification-pulse">
-                            {item.notifications}
-                          </span>
+                        {item.tooltip === 'Settings' && (
+                          <span className="ml-auto pl-4 text-xs text-[#888888]">⌘S</span>
                         )}
                       </>
                     )}
@@ -147,7 +130,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                 </TooltipTrigger>
                 <TooltipContent side="right" className="tooltip-content">
                   <p>{item.tooltip}</p>
-                  {item.kbd && <span className="ml-2 text-xs opacity-60">⌘{item.kbd}</span>}
+                  {item.tooltip === 'Settings' && <span className="ml-2 text-xs opacity-60">⌘S</span>}
                 </TooltipContent>
               </Tooltip>
               {item.separator === 'after' && <div className="w-full border-t border-[#2E2E2E] my-2" />}
@@ -164,11 +147,11 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
             <TooltipTrigger asChild>
               <button
                 onClick={openSettings}
-                className={`p-2 mb-2 flex items-center rounded-md text-[#4E4E4E] hover:text-white transition-colors duration-200 ${
+                className={`p-2 mb-2 flex items-center justify-center rounded-md text-[#4E4E4E] hover:text-white transition-colors duration-200 ${
                   width <= 120 ? 'mx-2' : 'mx-3'
                 }`}
               >
-                <Settings className="w-6 h-6" strokeWidth={1.5} />
+                <Settings className="w-9 h-9" />
                 {width > 120 && (
                   <>
                     <span className="ml-3 whitespace-nowrap">Settings</span>
@@ -183,85 +166,72 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
             </TooltipContent>
           </Tooltip>
 
-          {/* User dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={`p-2 mb-4 flex items-center text-[#4E4E4E] hover:text-white transition-colors duration-200 ${
-                  width <= 120 ? 'mx-2' : 'mx-3'
-                }`}
-              >
-                <div className="relative">
-                  {user ? (
-                    <>
-                      <img
-                        src={user.avatar}
-                        alt="User Avatar"
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#3ECF8E] rounded-full" />
-                    </>
-                  ) : (
-                    <User className="w-6 h-6" strokeWidth={1.5} />
-                  )}
+          {/* User section */}
+          {!loading && (
+            <>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center justify-center p-2 rounded-md text-[#4E4E4E] hover:text-white transition-colors duration-200">
+                    <User className="w-9 h-9" />
+                    {width > 120 && <span className="ml-3">Account</span>}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-[#1E1E1E] border-[#2E2E2E]">
+                    <DropdownMenuLabel className="text-white">My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[#2E2E2E]" />
+                    <DropdownMenuItem className="text-white hover:bg-[#3ECF8E] hover:text-black focus:bg-[#3ECF8E] focus:text-black">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Account settings</span>
+                      <span className="ml-auto text-xs text-[#888888]">⌘S</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-white hover:bg-[#3ECF8E] hover:text-black focus:bg-[#3ECF8E] focus:text-black">
+                      <Keyboard className="mr-2 h-4 w-4" />
+                      <span>Keyboard shortcuts</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-[#2E2E2E]" />
+                    <DropdownMenuItem 
+                      onClick={signOut}
+                      className="text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-500 focus:text-white"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className={`p-2 ${width <= 120 ? 'mx-2' : 'mx-3'}`}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => handleLogin('github')}
+                          className="w-full p-2 flex items-center justify-center rounded-md bg-[#2E2E2E] text-white hover:bg-[#3ECF8E] hover:text-black transition-colors duration-200"
+                        >
+                          {width <= 120 ? (
+                            <User className="w-6 h-6" />
+                          ) : (
+                            <span>Login with GitHub</span>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleLogin('google')}
+                          className="w-full p-2 flex items-center justify-center rounded-md bg-[#2E2E2E] text-white hover:bg-[#3ECF8E] hover:text-black transition-colors duration-200"
+                        >
+                          {width <= 120 ? (
+                            <User className="w-6 h-6" />
+                          ) : (
+                            <span>Login with Google</span>
+                          )}
+                        </button>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="tooltip-content">
+                      <p>Login to your account</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                {width > 120 && (
-                  <div className="ml-3 text-left flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{user?.name || 'User'}</p>
-                    <p className="text-xs text-gray-400 truncate">{user?.email || 'user@example.com'}</p>
-                  </div>
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              side="right"
-              className="w-[240px] p-2 bg-[#1E1E1E] border-[#2E2E2E] text-white"
-            >
-              <div className="flex items-center gap-2 p-2 mb-2">
-                <div className="relative">
-                  <img
-                    src={user?.avatar}
-                    alt="User Avatar"
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#3ECF8E] rounded-full border-2 border-[#1E1E1E]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{user?.name}</p>
-                  <p className="text-sm text-[#888888] truncate">{user?.email}</p>
-                </div>
-              </div>
-
-              <DropdownMenuItem className="text-white hover:bg-[#3ECF8E] hover:text-black focus:bg-[#3ECF8E] focus:text-black">
-                <User className="mr-2 h-4 w-4" />
-                <span>View profile</span>
-                <span className="ml-auto text-xs text-[#888888]">⌘P</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem className="text-white hover:bg-[#3ECF8E] hover:text-black focus:bg-[#3ECF8E] focus:text-black">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Account settings</span>
-                <span className="ml-auto text-xs text-[#888888]">⌘S</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem className="text-white hover:bg-[#3ECF8E] hover:text-black focus:bg-[#3ECF8E] focus:text-black">
-                <Keyboard className="mr-2 h-4 w-4" />
-                <span>Keyboard shortcuts</span>
-                <span className="ml-auto text-xs text-[#888888]">?</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem className="text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-500 focus:text-white">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-                <span className="ml-auto text-xs opacity-60">⌘Q</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              )}
+            </>
+          )}
         </div>
 
         {/* Resize Handle */}

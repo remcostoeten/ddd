@@ -1,11 +1,27 @@
-import { cn } from '@/lib/utils'
-import { Layout } from '@/shared/shared/components/layout'
+'use client';
+
+import { CheckSquare } from 'lucide-react';
+import { Page } from '@/shared/components/page/page';
+import { EmptyState } from '@/shared/components/empty-state';
+
 export default function TasksPage() {
   return (
-    <Layout>
-      <h1 className={cn("text-2xl font-bold mb-4")}>Tasks</h1>
-      <p className={cn("text-muted-foreground")}>Your to-do list and task management interface will appear here.</p>
-    </Layout>
-  )
+    <Page>
+      <Page.Header
+        title="Tasks"
+        description="Manage your tasks and track your progress"
+      />
+      <Page.Content>
+        <EmptyState
+          icon={CheckSquare}
+          title="No tasks created"
+          description="Create your first task to start organizing your work."
+          action={{
+            label: "Create Task",
+            onClick: () => console.log("Create task")
+          }}
+        />
+      </Page.Content>
+    </Page>
+  );
 }
-

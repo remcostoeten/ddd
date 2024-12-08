@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils'
 import { ChevronLeft } from 'lucide-react'
 import { sidebarMenu } from '@/app/core/config/sidebar-menu'
 import { useSidebarStore } from '@/app/store/sidebar-store'

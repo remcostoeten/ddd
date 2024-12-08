@@ -39,7 +39,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   trackingEnabled: false,
   fontSize: 'medium',
   highContrastMode: false,
-  monoFont: false,
+  monoFont: true,
   reducedMotion: false,
   compactMode: false,
   setFontSize: (size) => set({ fontSize: size }),

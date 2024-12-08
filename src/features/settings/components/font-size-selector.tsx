@@ -1,6 +1,6 @@
 import { Type } from 'lucide-react';
 import { useSettingsStore } from '../settings-store';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 type FontSize = 'small' | 'medium' | 'large';
 

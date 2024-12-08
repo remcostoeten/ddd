@@ -65,7 +65,7 @@ export function IconAside() {
         <div className="flex flex-col items-center">
           {sortedIconMenuItems.map((item, index) => (
             <div key={item.tooltip} className="w-full flex flex-col items-center">
-              {item.separator === 'before' && <div className="my-2 w-8 border-t border-[#2E2E2E]" />}
+              {item.separator === 'before' && <div className="my-2  border-t border-[#2E2E2E]" />}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link

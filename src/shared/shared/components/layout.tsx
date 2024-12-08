@@ -1,33 +1,51 @@
 'use client'
 
 import { type ReactNode, useState } from 'react'
-import { useSidebarStore } from '@/app/store/sidebar-store'
 import { useSettingsStore } from '@/features/settings/settings-store'
-import { cn } from '@/lib/utils'
+import { useSidebarStore } from '@/app/store/sidebar-store'
+import { cn } from '@/shared/lib/utils'
 import Sidebar from './sidebar'
+import Breadcrumbs from '@/components/breadcrumbs'
+import CommandPalette from '@/components/command-palette'
 
 type LayoutProps = {
   children: ReactNode
 }
 
-export function Layout({ children }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
+  const { monoFont, fontSize, reducedMotion } = useSettingsStore()
+  const [sidebarWidth, setSidebarWidth] = useState(60)
   const { isCollapsed, toggleSidebar } = useSidebarStore()
-  const { monoFont } = useSettingsStore()
-  const [sidebarWidth, setSidebarWidth] = useState<number>(60)
+
+  const fontSizeClasses = {
+    small: 'text-sm',
+    medium: 'text-base',
+    large: 'text-lg'
+  }
 
   return (
     <div className={cn(
-      "flex h-screen overflow-hidden",
-      monoFont && "font-mono"
+      "flex min-h-screen bg-background",
+      monoFont && "font-mono",
+      fontSizeClasses[fontSize],
+      reducedMotion && "motion-reduce"
     )}>
-      <Sidebar
+      <Sidebar 
         isCollapsed={isCollapsed}
         toggleSidebar={toggleSidebar}
         width={sidebarWidth}
         setWidth={setSidebarWidth}
       />
       <main className="flex-1 overflow-auto">
-        {children}
+        <div className="flex items-center justify-between p-4 border-b border-border/10">
+          <div className="flex items-center gap-4">
+            <Breadcrumbs />
+          </div>
+          <CommandPalette />
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
       </main>
     </div>
   )
