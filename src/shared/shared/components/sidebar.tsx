@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSidebarStore } from '@/app/store/sidebar-store'
 import { User as UserType, getUser } from '@/app/types/user'
-import { ShieldLogo } from './ShieldLogo'
 import { sidebarMenu } from '@/app/core/config/sidebar-menu'
 import { toast } from 'sonner'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/shared/components/ui/dropdown-menu'
@@ -14,6 +13,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shar
 import { useSettingsStore } from '@/features/settings/settings-store'
 import { useKeyboardShortcut } from '../hooks/use-keyboard-shortcut'
 import { SettingsModal } from '@/features/settings/components/settings-modal'
+import { useReducedMotion } from '../../../hooks/use-reduced-motion'
+import { useSettings } from '../../../hooks/use-settings'
+import { cn } from '../../../lib/utils'
+import AnimatedShieldLogo from '../../../components/ui/animated-shield-logo'
 
 type SidebarProps = {
   isCollapsed: boolean
@@ -34,9 +37,9 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
 
   const handleResizeEnd = () => {
     setIsResizing(false)
-    if (width <= 100) {
+    if (width < 120) {
       setWidth(60)
-    } else if (width > 100 && width < 240) {
+    } else {
       setWidth(240)
     }
   }
@@ -73,9 +76,6 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
 
   const openSettings = () => {
     toggleSettingsModal()
-    toast.success('Settings opened', {
-      description: 'Use Cmd/Ctrl + S to toggle settings anytime',
-    })
   }
 
   useKeyboardShortcut(
@@ -94,28 +94,21 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
       <aside
         className={`flex flex-col h-screen bg-[#181818] border-r border-[#2E2E2E] transition-all ${
           reducedMotion ? '' : 'duration-300'
-        } ease-in-out ${isCollapsed ? 'items-center' : 'items-start'} ${
-          compactMode ? 'py-2' : 'py-4'
-        } relative`}
+        } ease-in-out relative`}
         style={{ width: `${width}px` }}
       >
-        <div className="flex flex-col items-center w-full">
+        <div className="flex flex-col w-full">
           {/* Logo */}
-          <div className="my-4">
-            <ShieldLogo
-              size="xs"
-              animated
-              animationVariant="trace"
-              hasLink
-            />
+          <div className={`p-4 ${width <= 120 ? 'items-center' : 'items-start'}`}>
+            <AnimatedShieldLogo size="xs" />
           </div>
 
-          <div className="w-8 border-t border-[#2E2E2E] mb-4" />
+          <div className="w-full border-t border-[#2E2E2E] mb-4" />
 
           {/* Menu items */}
           {sortedMenuItems.map((item) => (
-            <div key={item.tooltip} className="w-full flex flex-col items-center">
-              {item.separator === 'before' && <div className="w-8 border-t border-[#2E2E2E] my-2" />}
+            <div key={item.tooltip} className="w-full">
+              {item.separator === 'before' && <div className="w-full border-t border-[#2E2E2E] my-2" />}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
@@ -126,25 +119,25 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                       pathname.startsWith(item.href)
                         ? 'bg-[#3ECF8E]/20 text-[#3ECF8E]'
                         : 'text-[#4E4E4E] hover:text-white hover:bg-white/10'
-                    } ${isCollapsed ? 'justify-center w-10' : 'w-full px-3'} relative`}
+                    } ${width <= 120 ? 'mx-2' : 'mx-3'} relative`}
                   >
-                    <item.icon className="w-5 h-5" strokeWidth={1.5} />
-                    {width > 100 && (
+                    <item.icon className="w-6 h-6" strokeWidth={1.5} />
+                    {width > 120 && (
                       <>
-                        <span className="ml-3 whitespace-nowrap overflow-hidden overflow-ellipsis">
+                        <span className="ml-3 whitespace-nowrap">
                           {item.tooltip}
                         </span>
                         {item.kbd && (
-                          <span className="ml-auto text-xs text-[#888888]">⌘{item.kbd}</span>
+                          <span className="ml-auto pl-4 text-xs text-[#888888]">⌘{item.kbd}</span>
                         )}
                       </>
                     )}
                     {item.notifications && (
                       <>
-                        {isCollapsed ? (
-                          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#3ECF8E] rounded-full" />
+                        {width <= 120 ? (
+                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#3ECF8E]/50 rounded-full notification-pulse" />
                         ) : (
-                          <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#3ECF8E] text-[10px] font-medium text-black">
+                          <span className="ml-auto flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[#3ECF8E] text-[10px] font-medium text-black notification-pulse">
                             {item.notifications}
                           </span>
                         )}
@@ -152,19 +145,19 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                     )}
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="right" className="tooltip-content">
                   <p>{item.tooltip}</p>
-                  {item.kbd && <p className="text-xs text-[#888888]">⌘ {item.kbd}</p>}
+                  {item.kbd && <span className="ml-2 text-xs opacity-60">⌘{item.kbd}</span>}
                 </TooltipContent>
               </Tooltip>
-              {item.separator === 'after' && <div className="w-8 border-t border-[#2E2E2E] my-2" />}
+              {item.separator === 'after' && <div className="w-full border-t border-[#2E2E2E] my-2" />}
             </div>
           ))}
         </div>
 
         {/* Bottom items */}
-        <div className="mt-auto flex flex-col items-center w-full">
-          <div className="w-8 border-t border-[#2E2E2E] mb-4" />
+        <div className="mt-auto flex flex-col w-full">
+          <div className="w-full border-t border-[#2E2E2E] mb-4" />
 
           {/* Settings button */}
           <Tooltip>
@@ -172,21 +165,21 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
               <button
                 onClick={openSettings}
                 className={`p-2 mb-2 flex items-center rounded-md text-[#4E4E4E] hover:text-white transition-colors duration-200 ${
-                  isCollapsed ? 'justify-center w-10' : 'w-full px-3'
+                  width <= 120 ? 'mx-2' : 'mx-3'
                 }`}
               >
-                <Settings className="w-5 h-5" strokeWidth={1.5} />
-                {!isCollapsed && (
+                <Settings className="w-6 h-6" strokeWidth={1.5} />
+                {width > 120 && (
                   <>
                     <span className="ml-3 whitespace-nowrap">Settings</span>
-                    <span className="ml-auto text-xs text-[#888888]">⌘S</span>
+                    <span className="ml-auto pl-4 text-xs text-[#888888]">⌘S</span>
                   </>
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent side="right" className="tooltip-content">
               <p>Settings</p>
-              <p className="text-xs text-[#888888]">⌘ S</p>
+              {width <= 120 && <span className="ml-2 text-xs opacity-60">⌘S</span>}
             </TooltipContent>
           </Tooltip>
 
@@ -194,8 +187,8 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`p-2 flex items-center rounded-md text-[#4E4E4E] hover:text-white transition-colors duration-200 w-full ${
-                  isCollapsed ? 'justify-center' : 'px-3'
+                className={`p-2 mb-4 flex items-center text-[#4E4E4E] hover:text-white transition-colors duration-200 ${
+                  width <= 120 ? 'mx-2' : 'mx-3'
                 }`}
               >
                 <div className="relative">
@@ -204,17 +197,17 @@ export default function Sidebar({ isCollapsed, toggleSidebar, width, setWidth }:
                       <img
                         src={user.avatar}
                         alt="User Avatar"
-                        width={24}
-                        height={24}
+                        width={20}
+                        height={20}
                         className="rounded-full"
                       />
-                      <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#3ECF8E] rounded-full border-2 border-[#181818]" />
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#3ECF8E] rounded-full" />
                     </>
                   ) : (
                     <User className="w-6 h-6" strokeWidth={1.5} />
                   )}
                 </div>
-                {!isCollapsed && (
+                {width > 120 && (
                   <div className="ml-3 text-left flex-1 min-w-0">
                     <p className="text-sm font-medium text-white">{user?.name || 'User'}</p>
                     <p className="text-xs text-gray-400 truncate">{user?.email || 'user@example.com'}</p>

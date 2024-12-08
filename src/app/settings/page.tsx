@@ -1,11 +1,13 @@
-import { Layout } from '@/shared/shared/components/layout'
+import { Metadata } from 'next'
+import { metadata as metadataConfig } from '@/core/config/metadata'
+
+export const metadata: Metadata = metadataConfig.settings
 
 export default function SettingsPage() {
   return (
-    <Layout>
-      <h1 className="text-2xl font-bold mb-4">Settings</h1>
-      <p className="text-muted-foreground">Manage your account settings and preferences here.</p>
-    </Layout>
+    <div>
+      <h1>Settings</h1>
+    </div>
   )
 }
 

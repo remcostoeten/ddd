@@ -1,6 +1,7 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -24,6 +25,7 @@
     --input: 0 0% 89.8%;
     --ring: 142 72% 29%;
     --radius: 0.5rem;
+    --font-mono: 'JetBrains Mono', monospace;
   }
  
   .dark {
@@ -31,7 +33,7 @@
     --foreground: 0 0% 98%;
     --card: 0 0% 11%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 11%;
+    --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 142 72% 29%;
     --primary-foreground: 0 0% 98%;
@@ -46,6 +48,7 @@
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 142 72% 29%;
+    --tooltip: 0 0% 0%;
   }
 }
 
@@ -56,17 +59,45 @@
   body {
     @apply bg-background text-foreground;
   }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
 }
 
-.cursor-small * {
-  cursor: pointer;
-  cursor: url("data:image/svg+xml,..."), auto;
+/* Custom tooltip styles */
+.tooltip-content {
+  @apply bg-[#1a1a1a] text-white px-2 py-1.5 rounded-md text-sm whitespace-nowrap shadow-lg;
+  line-height: 1;
 }
 
-.cursor-large * {
-  cursor: pointer;
-  cursor: url("data:image/svg+xml,..."), auto;
-  transform: scale(1.5);
+.tooltip-content[data-state='delayed-open'][data-side='right'] {
+  animation: slideLeftAndFade 0.2s ease-out;
+}
+
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.notification-pulse {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 
 .motion-reduce * {

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
 type FontSize = 'small' | 'medium' | 'large';
-type CursorSize = 'small' | 'medium' | 'large';
 
 type SettingsStore = {
   isSettingsOpen: boolean;
@@ -10,27 +9,19 @@ type SettingsStore = {
   theme: string;
   setTheme: (theme: "dark" | "light" | "system") => void;
   showFontSizeSetting: boolean;
-  showCursorSizeSetting: boolean;
   showReducedMotionSetting: boolean;
   showHighContrastSetting: boolean;
-  showDyslexicFontSetting: boolean;
+  showMonoFontSetting: boolean;
   showCompactModeSetting: boolean;
-  showNotificationSettings: boolean;
-  notificationsEnabled: boolean;
-  notificationSound: boolean;
-  showKeyboardSettings: boolean;
-  keyboardShortcutsEnabled: boolean;
-  trackingEnabled: boolean;
   showPrivacySettings: boolean;
+  trackingEnabled: boolean;
   fontSize: FontSize;
   highContrastMode: boolean;
-  dyslexicFont: boolean;
-  cursorSize: CursorSize;
+  monoFont: boolean;
   reducedMotion: boolean;
   compactMode: boolean;
   setFontSize: (size: FontSize) => void;
-  setCursorSize: (size: CursorSize) => void;
-  toggleSetting: (setting: keyof Omit<SettingsStore, 'setFontSize' | 'setCursorSize' | 'toggleSetting' | 'toggleSettingsModal' | 'setTheme'>) => void;
+  toggleSetting: (setting: keyof Omit<SettingsStore, 'setFontSize' | 'toggleSetting' | 'toggleSettingsModal' | 'setTheme'>) => void;
 };
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
@@ -40,26 +31,18 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   theme: 'system',
   setTheme: (theme) => set({ theme }),
   showFontSizeSetting: true,
-  showCursorSizeSetting: true,
   showReducedMotionSetting: true,
   showHighContrastSetting: true,
-  showDyslexicFontSetting: true,
+  showMonoFontSetting: true,
   showCompactModeSetting: true,
-  showNotificationSettings: true,
-  notificationsEnabled: true,
-  notificationSound: true,
-  showKeyboardSettings: true,
-  keyboardShortcutsEnabled: true,
-  trackingEnabled: false,
   showPrivacySettings: true,
+  trackingEnabled: false,
   fontSize: 'medium',
   highContrastMode: false,
-  dyslexicFont: false,
-  cursorSize: 'medium',
+  monoFont: false,
   reducedMotion: false,
   compactMode: false,
   setFontSize: (size) => set({ fontSize: size }),
-  setCursorSize: (size) => set({ cursorSize: size }),
   toggleSetting: (setting) => set((state) => ({ [setting]: !state[setting] })),
 }));
 

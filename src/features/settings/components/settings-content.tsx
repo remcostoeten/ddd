@@ -1,11 +1,10 @@
-import { Eye, Layout, Bell, Keyboard, Shield } from 'lucide-react';
+import { Eye, Layout, Shield } from 'lucide-react';
 import { useSettingsStore } from '../settings-store';
 import { SettingsSection } from './settings-section';
 import { ToggleSetting } from './toggle-setting';
 import { Separator } from '@/shared/components/ui/separator';
 import { ThemeSwitcher } from './theme-switcher';
 import { FontSizeSelector } from './font-size-selector';
-import { CursorSizeSelector } from './cursor-size-selector';
 
 export function SettingsContent() {
   const settings = useSettingsStore();
@@ -23,8 +22,13 @@ export function SettingsContent() {
             <FontSizeSelector />
           )}
 
-          {settings.showCursorSizeSetting && (
-            <CursorSizeSelector />
+          {settings.showMonoFontSetting && (
+            <ToggleSetting
+              label="Monospace Font"
+              description="Use JetBrains Mono for a developer-friendly experience"
+              checked={settings.monoFont}
+              onChange={() => settings.toggleSetting('monoFont')}
+            />
           )}
 
           {settings.showReducedMotionSetting && (
@@ -44,15 +48,6 @@ export function SettingsContent() {
               onChange={() => settings.toggleSetting('highContrastMode')}
             />
           )}
-
-          {settings.showDyslexicFontSetting && (
-            <ToggleSetting
-              label="Dyslexic-friendly Font"
-              description="Use a font designed to be easier to read for people with dyslexia"
-              checked={settings.dyslexicFont}
-              onChange={() => settings.toggleSetting('dyslexicFont')}
-            />
-          )}
         </SettingsSection>
       )}
 
@@ -65,40 +60,6 @@ export function SettingsContent() {
               description="Reduce spacing in the interface"
               checked={settings.compactMode}
               onChange={() => settings.toggleSetting('compactMode')}
-            />
-          </SettingsSection>
-        </>
-      )}
-
-      {settings.showNotificationSettings && (
-        <>
-          <Separator className="my-6" />
-          <SettingsSection title="Notifications" icon={Bell}>
-            <ToggleSetting
-              label="Enable Notifications"
-              description="Receive important updates and alerts"
-              checked={settings.notificationsEnabled}
-              onChange={() => settings.toggleSetting('notificationsEnabled')}
-            />
-            <ToggleSetting
-              label="Notification Sound"
-              description="Play a sound when receiving notifications"
-              checked={settings.notificationSound}
-              onChange={() => settings.toggleSetting('notificationSound')}
-            />
-          </SettingsSection>
-        </>
-      )}
-
-      {settings.showKeyboardSettings && (
-        <>
-          <Separator className="my-6" />
-          <SettingsSection title="Keyboard" icon={Keyboard}>
-            <ToggleSetting
-              label="Enable Keyboard Shortcuts"
-              description="Use keyboard shortcuts for quick navigation"
-              checked={settings.keyboardShortcutsEnabled}
-              onChange={() => settings.toggleSetting('keyboardShortcutsEnabled')}
             />
           </SettingsSection>
         </>

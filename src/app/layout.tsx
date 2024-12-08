@@ -5,13 +5,11 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Layout } from '@/shared/shared/components/layout'
+import { metadata as metadataConfig } from '@/core/config/metadata'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'ISP Dashboard',
-  description: 'Integrated Service Platform Dashboard',
-}
+export const metadata: Metadata = metadataConfig.default
 
 export default function RootLayout({
   children,
